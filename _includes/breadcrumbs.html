@@ -1,6 +1,13 @@
-{% assign raw_segments = page.url | split:'/' | reject:' ' %}
+{% assign raw_segments = page.url | split:'/' %}
+{% assign segments = "" | split:"" %}
+{% for s in raw_segments %}
+  {% if s != "" %}
+    {% assign segments = segments | push: s %}
+  {% endif %}
+{% endfor %}
+
 {% assign path = '' %}
-{% assign last_index = raw_segments.size | minus: 1 %}
+{% assign last_index = segments.size | minus: 1 %}
 
 <nav class="breadcrumbs" aria-label="Breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList">
   <ol>
@@ -9,72 +16,62 @@
       <meta itemprop="position" content="1" />
     </li>
 
-    {% for segment in raw_segments %}
-      {% if segment != '' %}
-        {% assign path = path | append:'/' | append:segment %}
-        {% assign index = forloop.index0 | plus: 2 %}
+    {% for segment in segments %}
+      {% assign seg_lower = segment | downcase %}
+      {% assign path = path | append:'/' | append:segment %}
+      {% assign index = forloop.index0 | plus: 2 %}
 
-        {% assign seg_lower = segment | downcase %}
-        {% assign name = seg_lower %}
-        {% assign prev_index = forloop.index0 | minus: 1 %}
-        {% assign prev_seg = raw_segments[prev_index] | downcase %}
+      {% assign name = seg_lower %}
+      {% assign prev_index = forloop.index0 | minus: 1 %}
+      {% assign prev_seg = segments[prev_index] | downcase %}
 
-        {# Priority 1: manual overrides #}
-        {% if site.data.breadcrumb_map and site.data.breadcrumb_map[seg_lower] %}
-          {% assign name = site.data.breadcrumb_map[seg_lower] %}
+      {% if site.data.breadcrumb_map and site.data.breadcrumb_map[seg_lower] %}
+        {% assign name = site.data.breadcrumb_map[seg_lower] %}
+      {% elsif site.data.us_states and site.data.us_states[seg_lower] %}
+        {% assign name = site.data.us_states[seg_lower] %}
+      {% elsif forloop.index0 > 0 and site.data.us_states and site.data.us_states[prev_seg] %}
+        {% assign is_louisiana = prev_seg == 'la' or prev_seg == 'louisiana' %}
+        {% assign is_alaska = prev_seg == 'ak' or prev_seg == 'alaska' %}
 
-        {# Priority 2: state mapping #}
-        {% elsif site.data.us_states and site.data.us_states[seg_lower] %}
-          {% assign name = site.data.us_states[seg_lower] %}
-
-        {# Priority 3: county-level logic if previous segment is a state #}
-        {% elsif forloop.index0 > 0 and site.data.us_states[prev_seg] %}
-
-          {%- assign is_louisiana = prev_seg == 'la' or prev_seg == 'louisiana' -%}
-          {%- assign is_alaska = prev_seg == 'ak' or prev_seg == 'alaska' -%}
-
-          {% if is_louisiana %}
-            {% assign name = seg_lower
-              | replace:'-parish',''
-              | replace:'-county',''
-              | replace:'-borough',''
-              | replace:'-',' '
-              | capitalize
-              | append:' Parish' %}
-          {% elsif is_alaska %}
-            {% assign name = seg_lower
-              | replace:'-borough',''
-              | replace:'-parish',''
-              | replace:'-county',''
-              | replace:'-',' '
-              | capitalize
-              | append:' Borough' %}
-          {% else %}
-            {% assign name = seg_lower
-              | replace:'-county',''
-              | replace:'-parish',''
-              | replace:'-borough',''
-              | replace:'-',' '
-              | capitalize
-              | append:' County' %}
-          {% endif %}
-
-        {# Priority 4: normal fallback #}
+        {% if is_louisiana %}
+          {% assign name = seg_lower
+            | replace:'-parish',''
+            | replace:'-county',''
+            | replace:'-borough',''
+            | replace:'-',' '
+            | capitalize
+            | append:' Parish' %}
+        {% elsif is_alaska %}
+          {% assign name = seg_lower
+            | replace:'-borough',''
+            | replace:'-parish',''
+            | replace:'-county',''
+            | replace:'-',' '
+            | capitalize
+            | append:' Borough' %}
         {% else %}
-          {% assign name = name | replace:'-',' ' | capitalize %}
+          {% assign name = seg_lower
+            | replace:'-county',''
+            | replace:'-parish',''
+            | replace:'-borough',''
+            | replace:'-',' '
+            | capitalize
+            | append:' County' %}
         {% endif %}
+      {% else %}
+        {% assign name = name | replace:'-',' ' | capitalize %}
+      {% endif %}
 
-        {% if forloop.index0 == last_index %}
-          <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem" aria-current="page">
-            <span itemprop="name">{{ name }}</span>
-            <meta itemprop="position" content="{{ index }}" />
-          </li>
-        {% else %}
-          <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-            <a href="{{ path }}/" itemprop="item"><span itemprop="name">{{ name }}</span></a>
-            <meta itemprop="position" content="{{ index }}" />
-          </li>
-        {% endif %}
+      {% if forloop.index0 == last_index %}
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem" aria-current="page">
+          <span itemprop="name">{{ name }}</span>
+          <meta itemprop="position" content="{{ index }}" />
+        </li>
+      {% else %}
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a href="{{ path }}/" itemprop="item"><span itemprop="name">{{ name }}</span></a>
+          <meta itemprop="position" content="{{ index }}" />
+        </li>
       {% endif %}
     {% endfor %}
   </ol>

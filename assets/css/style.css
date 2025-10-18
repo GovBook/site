@@ -17,6 +17,7 @@
     --border: #1f2937;
     --shadow: 0 6px 24px rgba(0,0,0,.35);
     --accent: #1f6f3b; /* darker green for better contrast */
+    --accent-link: #4ade80;   /* brighter green (meets contrast) */
   }
 }
 

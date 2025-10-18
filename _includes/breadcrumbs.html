@@ -11,12 +11,26 @@
 
     {% for segment in raw_segments %}
       {% if segment != '' %}
-        {% assign path = path | append: '/' | append: segment %}
+        {% assign path = path | append:'/' | append:segment %}
         {% assign index = forloop.index0 | plus: 2 %}
 
-        {% assign name = segment %}
+        {%- assign name = segment -%}
+
+        {%- comment -%}
+        Priority 1: manual override in breadcrumb_map.yml
+        {%- endcomment -%}
         {% if site.data.breadcrumb_map[segment] %}
           {% assign name = site.data.breadcrumb_map[segment] %}
+
+        {%- comment -%}
+        Priority 2: US states auto mapping
+        {%- endcomment -%}
+        {% elsif site.data.us_states[segment] %}
+          {% assign name = site.data.us_states[segment] %}
+
+        {%- comment -%}
+        Priority 3: fallback prettifier
+        {%- endcomment -%}
         {% else %}
           {% assign name = name | replace:'-',' ' | capitalize %}
         {% endif %}

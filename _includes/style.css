@@ -18,6 +18,7 @@
   --border: #1f2937;
   --shadow: 0 6px 24px rgba(0,0,0,.35);
   --accent: #2f8f4e;
+  --accent-link-light: #2f8f4e;
   --accent-link: #4ade80;    /* bright green for inline text links */
 }
 

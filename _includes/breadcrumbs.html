@@ -24,13 +24,14 @@
       {% assign index = forloop.index0 | plus: 2 %}
       {% assign is_last = forloop.index0 == last_index %}
 
+      {% assign is_jurisdiction = false %}
+      {% assign name = seg_lower %}
+
       {% assign is_state = site.data.us_states and site.data.us_states[seg_lower] %}
       {% assign is_independent_city = site.data.independent_cities and site.data.independent_cities[seg_lower] %}
       {% assign prev_is_state = site.data.us_states and site.data.us_states[prev_seg] %}
       {% assign prev_is_independent_city = site.data.independent_cities and site.data.independent_cities[prev_seg] %}
       {% assign prev_is_county = prev_seg contains '-county' or prev_seg contains '-parish' or prev_seg contains '-borough' %}
-
-      {% assign name = seg_lower %}
 
       {% if seg_lower == 'us' %}
         {% assign name = "United States" %}
@@ -60,8 +61,6 @@
         {% assign name = seg_lower | replace:'-',' ' | capitalize %}
         {% assign is_jurisdiction = true %}
 
-      {% else %}
-        {% assign is_jurisdiction = false %}
       {% endif %}
 
       {% if is_last and is_jurisdiction == false %}
@@ -80,7 +79,6 @@
           <meta itemprop="position" content="{{ index }}" />
         </li>
       {% endif %}
-
     {% endfor %}
   </ol>
 </nav>

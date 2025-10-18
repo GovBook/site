@@ -10,4 +10,4 @@ Browse elected officials in Texas.
 
 ## Example Counties
 
-- [Collin County](/us/tx/collin-county/)
+- [Collin County](/us/texas/collin-county/)

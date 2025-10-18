@@ -16,21 +16,38 @@
 
         {%- assign name = segment -%}
 
-        {%- comment -%}
-        Priority 1: manual override in breadcrumb_map.yml
-        {%- endcomment -%}
+        {# -------------------------------------- #}
+        {# Priority 1: Manual overrides #}
+        {# -------------------------------------- #}
         {% if site.data.breadcrumb_map[segment] %}
           {% assign name = site.data.breadcrumb_map[segment] %}
 
-        {%- comment -%}
-        Priority 2: US states auto mapping
-        {%- endcomment -%}
+        {# -------------------------------------- #}
+        {# Priority 2: State mapping #}
+        {# -------------------------------------- #}
         {% elsif site.data.us_states[segment] %}
           {% assign name = site.data.us_states[segment] %}
 
-        {%- comment -%}
-        Priority 3: fallback prettifier
-        {%- endcomment -%}
+        {# -------------------------------------- #}
+        {# Priority 3: County fallback logic      #}
+        {# only triggers if previous segment was a state #}
+        {# -------------------------------------- #}
+        {% elsif forloop.index0 > 0 and site.data.us_states[raw_segments[forloop.index0 | minus: 1]] %}
+          {%- assign seg_lower = segment | downcase -%}
+
+          {% if seg_lower contains '-county' %}
+            {% assign name = seg_lower | replace:'-county','' | replace:'-',' ' | capitalize | append:' County' %}
+          {% elsif seg_lower contains '-parish' %}
+            {% assign name = seg_lower | replace:'-parish','' | replace:'-',' ' | capitalize | append:' Parish' %}
+          {% elsif seg_lower contains '-borough' %}
+            {% assign name = seg_lower | replace:'-borough','' | replace:'-',' ' | capitalize | append:' Borough' %}
+          {% else %}
+            {% assign name = seg_lower | replace:'-',' ' | capitalize | append:' County' %}
+          {% endif %}
+
+        {# -------------------------------------- #}
+        {# Priority 4: Final fallback (pretty slug) #}
+        {# -------------------------------------- #}
         {% else %}
           {% assign name = name | replace:'-',' ' | capitalize %}
         {% endif %}

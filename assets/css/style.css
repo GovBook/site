@@ -1,5 +1,5 @@
 :root{
-  --accent: #2f8f4e;           /* green */
+  --accent: #2f8f4e;           /* green (default) */
   --bg: #ffffff;
   --bg-elev: #f6f8fa;
   --text: #0f1720;
@@ -8,21 +8,35 @@
   --shadow: 0 4px 16px rgba(0,0,0,.06);
 }
 
-@media (prefers-color-scheme: dark){
-  :root{
+/* Force dark mode when .dark is present */
+:root.dark {
+  --bg: #0d1117;
+  --bg-elev: #111827;
+  --text: #e6edf3;
+  --muted: #9aa7b3;
+  --border: #1f2937;
+  --shadow: 0 6px 24px rgba(0,0,0,.35);
+  --accent: #1f6f3b;         /* darker green for UI surfaces */
+  --accent-link: #4ade80;    /* bright green for inline links (WCAG AA) */
+}
+
+/* Auto-dark mode based on system, UNLESS .light is explicitly set */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
     --bg: #0d1117;
     --bg-elev: #111827;
     --text: #e6edf3;
     --muted: #9aa7b3;
     --border: #1f2937;
     --shadow: 0 6px 24px rgba(0,0,0,.35);
-    --accent: #1f6f3b; /* darker green for better contrast */
-    --accent-link: #2f8f4e; /* #4ade80;   /* brighter green (meets contrast) */
+    --accent: #1f6f3b;
+    --accent-link: #4ade80;
   }
 }
 
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,'Helvetica Neue',Arial}
+
 a { 
   color: var(--accent-link, var(--accent)); 
   text-decoration: none; 
@@ -98,16 +112,13 @@ ul,ol{margin:.5rem 0 .75rem 1.25rem}
   border-radius: 8px;
   cursor: pointer;
   font-size: .9rem;
-}
-.theme-toggle:hover {
-  border-color: var(--accent);
-}
-.theme-toggle {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
+.theme-toggle:hover {
+  border-color: var(--accent);
+}
 .theme-icon {
   font-size: 1rem;
 }
-

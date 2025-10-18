@@ -20,57 +20,46 @@
       {% assign seg_lower = segment | downcase %}
       {% assign path = path | append:'/' | append:segment %}
       {% assign index = forloop.index0 | plus: 2 %}
-
       {% assign name = seg_lower %}
       {% assign prev_index = forloop.index0 | minus: 1 %}
       {% assign prev_seg = segments[prev_index] | downcase %}
 
+      {% assign is_last = forloop.index0 == last_index %}
+
+      {% assign is_state = site.data.us_states and site.data.us_states[seg_lower] %}
+      {% assign is_independent_city = site.data.independent_cities and site.data.independent_cities[seg_lower] %}
+      {% assign prev_is_independent_city = site.data.independent_cities and site.data.independent_cities[prev_seg] %}
+      {% assign prev_is_county = prev_seg contains '-county' or prev_seg contains '-parish' or prev_seg contains '-borough' %}
+
       {% if site.data.breadcrumb_map and site.data.breadcrumb_map[seg_lower] %}
         {% assign name = site.data.breadcrumb_map[seg_lower] %}
-
-      {% elsif site.data.us_states and site.data.us_states[seg_lower] %}
+      {% elsif is_state %}
         {% assign name = site.data.us_states[seg_lower] %}
-
       {% elsif forloop.index0 > 0 and site.data.us_states and site.data.us_states[prev_seg] %}
         {% if prev_seg == 'la' or prev_seg == 'louisiana' %}
-          {% assign name = seg_lower
-            | replace:'-parish',''
-            | replace:'-county',''
-            | replace:'-borough',''
-            | replace:'-',' '
-            | capitalize
-            | append:' Parish' %}
+          {% assign name = seg_lower | replace:'-parish','' | replace:'-county','' | replace:'-borough','' | replace:'-',' ' | capitalize | append:' Parish' %}
         {% elsif prev_seg == 'ak' or prev_seg == 'alaska' %}
-          {% assign name = seg_lower
-            | replace:'-borough',''
-            | replace:'-parish',''
-            | replace:'-county',''
-            | replace:'-',' '
-            | capitalize
-            | append:' Borough' %}
+          {% assign name = seg_lower | replace:'-borough','' | replace:'-parish','' | replace:'-county','' | replace:'-',' ' | capitalize | append:' Borough' %}
         {% else %}
           {% if seg_lower contains '-county' %}
-            {% assign name = seg_lower
-              | replace:'-county',''
-              | replace:'-',' '
-              | capitalize
-              | append:' County' %}
+            {% assign name = seg_lower | replace:'-county','' | replace:'-',' ' | capitalize | append:' County' %}
           {% else %}
             {% assign name = seg_lower | replace:'-',' ' | capitalize %}
           {% endif %}
         {% endif %}
-
-      {% elsif site.data.independent_cities and site.data.independent_cities[seg_lower] %}
+      {% elsif is_independent_city %}
         {% assign name = site.data.independent_cities[seg_lower] %}
-
-      {% elsif forloop.index0 > 0 and (prev_seg contains 'county' or site.data.independent_cities[prev_seg]) %}
-        {% assign name = seg_lower | replace:'-',' ' | capitalize %}
-
+      {% elsif prev_is_independent_city or prev_is_county %}
+        {% if is_last %}
+          {% assign name = seg_lower | replace:'-',' ' | capitalize %}
+        {% else %}
+          {% assign name = seg_lower | replace:'-',' ' | capitalize %}
+        {% endif %}
       {% else %}
-        {% assign name = name | replace:'-',' ' | capitalize %}
+        {% assign name = seg_lower | replace:'-',' ' | capitalize %}
       {% endif %}
 
-      {% if forloop.index0 == last_index %}
+      {% if is_last %}
         <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem" aria-current="page">
           <span itemprop="name">{{ name }}</span>
           <meta itemprop="position" content="{{ index }}" />
@@ -81,7 +70,6 @@
           <meta itemprop="position" content="{{ index }}" />
         </li>
       {% endif %}
-
     {% endfor %}
   </ol>
 </nav>

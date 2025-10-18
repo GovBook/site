@@ -25,15 +25,12 @@
       {% assign prev_index = forloop.index0 | minus: 1 %}
       {% assign prev_seg = segments[prev_index] | downcase %}
 
-      {# Priority 1: manual overrides #}
       {% if site.data.breadcrumb_map and site.data.breadcrumb_map[seg_lower] %}
         {% assign name = site.data.breadcrumb_map[seg_lower] %}
 
-      {# Priority 2: state name #}
       {% elsif site.data.us_states and site.data.us_states[seg_lower] %}
         {% assign name = site.data.us_states[seg_lower] %}
 
-      {# Priority 3: county/parish/borough (prev was a state) #}
       {% elsif forloop.index0 > 0 and site.data.us_states and site.data.us_states[prev_seg] %}
         {% if prev_seg == 'la' or prev_seg == 'louisiana' %}
           {% assign name = seg_lower
@@ -63,15 +60,12 @@
           {% endif %}
         {% endif %}
 
-      {# Priority 4: independent cities (county-equivalent) #}
       {% elsif site.data.independent_cities and site.data.independent_cities[seg_lower] %}
         {% assign name = site.data.independent_cities[seg_lower] %}
 
-      {# Priority 5: city-level (prev was county or independent city) #}
       {% elsif forloop.index0 > 0 and (prev_seg contains 'county' or site.data.independent_cities[prev_seg]) %}
         {% assign name = seg_lower | replace:'-',' ' | capitalize %}
 
-      {# Priority 6: fallback #}
       {% else %}
         {% assign name = name | replace:'-',' ' | capitalize %}
       {% endif %}

@@ -16,49 +16,6 @@
     {{ content }}
   </main>
   {% include footer.html %}
-  <script>
-  (function(){
-    const storageKey = 'govbook-theme';
-    const root = document.documentElement;
-    const btn  = document.getElementById('theme-toggle');
-    const icon = btn.querySelector('.theme-icon');
-    const label = btn.querySelector('.theme-label');
-  
-    function applyTheme(theme) {
-      root.classList.remove('light','dark');
-      if (theme === 'light') root.classList.add('light');
-      if (theme === 'dark')  root.classList.add('dark');
-  
-      // Update ARIA + UI labels/icons
-      if (theme === 'light') {
-        btn.setAttribute('aria-pressed', 'true');
-        icon.textContent = '☀️';
-        label.textContent = 'Light';
-      } else if (theme === 'dark') {
-        btn.setAttribute('aria-pressed', 'true');
-        icon.textContent = '🌙';
-        label.textContent = 'Dark';
-      } else {
-        btn.setAttribute('aria-pressed', 'false');
-        icon.textContent = '🖥';
-        label.textContent = 'System';
-      }
-    }
-  
-    // Load persisted theme
-    const remembered = localStorage.getItem(storageKey);
-    applyTheme(remembered);
-  
-    btn.addEventListener('click', () => {
-      const current = localStorage.getItem(storageKey);
-      const next = current === 'dark' ? 'light'
-                 : current === 'light' ? null
-                 : 'dark';
-      if (next) localStorage.setItem(storageKey, next);
-      else localStorage.removeItem(storageKey);
-      applyTheme(next);
-    });
-  })();
-  </script>
+  <script src="/assets/js/theme.js"></script>
 </body>
 </html>

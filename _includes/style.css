@@ -104,6 +104,28 @@ ul,ol{margin:.5rem 0 .75rem 1.25rem}
   margin-bottom: 1rem;
 }
 
+/* ✅ Breadcrumb V2 visual styling */
+.breadcrumbs ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.breadcrumbs li {
+  display: flex;
+  align-items: center;
+}
+.breadcrumbs li::after {
+  content: "›";
+  margin: 0 6px;
+  color: var(--muted);
+}
+.breadcrumbs li:last-child::after {
+  content: "";
+}
+
 .theme-toggle {
   background: none;
   border: 1px solid var(--border);

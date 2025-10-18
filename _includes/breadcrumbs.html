@@ -14,27 +14,21 @@
         {% assign path = path | append:'/' | append:segment %}
         {% assign index = forloop.index0 | plus: 2 %}
 
-        {%- assign name = segment -%}
+        {% assign name = segment %}
+        {% assign seg_lower = segment | downcase %}
+        {% assign prev_index = forloop.index0 | minus: 1 %}
+        {% assign prev_seg = raw_segments[prev_index] | downcase %}
 
-        {# -------------------------------------- #}
-        {# Priority 1: Manual overrides #}
-        {# -------------------------------------- #}
-        {% if site.data.breadcrumb_map[segment] %}
-          {% assign name = site.data.breadcrumb_map[segment] %}
+        {%- comment -%} Priority 1: manual overrides via _data/breadcrumb_map.yml {%- endcomment -%}
+        {% if site.data.breadcrumb_map and site.data.breadcrumb_map[seg_lower] %}
+          {% assign name = site.data.breadcrumb_map[seg_lower] %}
 
-        {# -------------------------------------- #}
-        {# Priority 2: State mapping #}
-        {# -------------------------------------- #}
-        {% elsif site.data.us_states[segment] %}
-          {% assign name = site.data.us_states[segment] %}
+        {%- comment -%} Priority 2: US states via _data/us_states.yml {%- endcomment -%}
+        {% elsif site.data.us_states and site.data.us_states[seg_lower] %}
+          {% assign name = site.data.us_states[seg_lower] %}
 
-        {# -------------------------------------- #}
-        {# Priority 3: County fallback logic      #}
-        {# only triggers if previous segment was a state #}
-        {# -------------------------------------- #}
-        {% elsif forloop.index0 > 0 and site.data.us_states[raw_segments[forloop.index0 | minus: 1]] %}
-          {%- assign seg_lower = segment | downcase -%}
-
+        {%- comment -%} Priority 3: County fallback if previous segment is a state {%- endcomment -%}
+        {% elsif forloop.index0 > 0 and site.data.us_states and site.data.us_states[prev_seg] %}
           {% if seg_lower contains '-county' %}
             {% assign name = seg_lower | replace:'-county','' | replace:'-',' ' | capitalize | append:' County' %}
           {% elsif seg_lower contains '-parish' %}
@@ -45,9 +39,7 @@
             {% assign name = seg_lower | replace:'-',' ' | capitalize | append:' County' %}
           {% endif %}
 
-        {# -------------------------------------- #}
-        {# Priority 4: Final fallback (pretty slug) #}
-        {# -------------------------------------- #}
+        {%- comment -%} Priority 4: Generic prettifier fallback {%- endcomment -%}
         {% else %}
           {% assign name = name | replace:'-',' ' | capitalize %}
         {% endif %}

@@ -1,3 +1,13 @@
+{% comment %}
+  GovBook Breadcrumbs — V7.4 (drop-in)
+  Rules:
+  - Home: always clickable.
+  - United States: clickable except on /us/ (current page).
+  - State / County / Parish / Borough / City: clickable unless it is the current page.
+  - People pages (terminal): never clickable.
+  - Non-/us/ sections (e.g., /about/, /news/): show as simple trail (no US/state logic).
+{% endcomment %}
+
 {% assign raw_segments = page.url | split:'/' %}
 {% assign segments = "" | split:"" %}
 {% for s in raw_segments %}
@@ -11,63 +21,127 @@
 
 <nav class="breadcrumbs" aria-label="Breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList">
   <ol>
+    <!-- Home -->
     <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
       <a href="/" itemprop="item"><span itemprop="name">Home</span></a>
       <meta itemprop="position" content="1" />
     </li>
 
+    {% assign on_us_branch = segments.size > 0 and segments[0] | downcase == 'us' %}
+
     {% for segment in segments %}
       {% assign seg_lower = segment | downcase %}
-      {% assign prev_index = forloop.index0 | minus: 1 %}
-      {% assign prev_seg = segments[prev_index] | downcase %}
+
+      {% comment %} Build previous segment safely (no negative index wrap) {% endcomment %}
+      {% assign prev_seg = '' %}
+      {% if forloop.index0 > 0 %}
+        {% assign prev_seg = segments[forloop.index0 | minus: 1] | downcase %}
+      {% endif %}
+
+      {% comment %} Incremental path (always without trailing slash first, we add slash in href) {% endcomment %}
       {% assign path = path | append:'/' | append:segment %}
-      {% assign index = forloop.index0 | plus: 2 %}
+
+      {% assign index = forloop.index0 | plus: 2 %}  {# 1 for Home + current #}
       {% assign is_last = forloop.index0 == last_index %}
 
+      {% comment %}
+        Defaults for each segment
+      {% endcomment %}
       {% assign is_jurisdiction = false %}
+      {% assign is_person = false %}
       {% assign name = seg_lower %}
 
-      {% assign is_state = site.data.us_states and site.data.us_states[seg_lower] %}
-      {% assign is_independent_city = site.data.independent_cities and site.data.independent_cities[seg_lower] %}
-      {% assign prev_is_state = site.data.us_states and site.data.us_states[prev_seg] %}
-      {% assign prev_is_independent_city = site.data.independent_cities and site.data.independent_cities[prev_seg] %}
-      {% assign prev_is_county = prev_seg contains '-county' or prev_seg contains '-parish' or prev_seg contains '-borough' %}
+      {% comment %}
+        Helper: Titleize hyphenated names (Frisco, Collin County base, etc.)
+      {% endcomment %}
+      {% capture titleized %}
+        {% assign words = seg_lower | replace:'-',' ' | split:' ' %}
+        {% for w in words %}
+          {% if forloop.first == false %} {% endif %}{{ w | capitalize }}
+        {% endfor %}
+      {% endcapture %}
 
-      {% if seg_lower == 'us' %}
-        {% assign name = "United States" %}
-        {% assign is_jurisdiction = true %}
+      {% if on_us_branch %}
+        {%- comment -%} Jurisdiction logic only under /us/{%- endcomment -%}
 
-      {% elsif is_state %}
-        {% assign name = site.data.us_states[seg_lower] %}
-        {% assign is_jurisdiction = true %}
+        {% assign is_state = site.data.us_states and site.data.us_states[seg_lower] %}
+        {% assign prev_is_state = site.data.us_states and site.data.us_states[prev_seg] %}
 
-      {% elsif prev_is_state %}
-        {% if prev_seg == 'la' or prev_seg == 'louisiana' %}
-          {% assign name = seg_lower | replace:'-parish','' | replace:'-county','' | replace:'-borough','' | replace:'-',' ' | capitalize | append:' Parish' %}
-        {% elsif prev_seg == 'ak' or prev_seg == 'alaska' %}
-          {% assign name = seg_lower | replace:'-borough','' | replace:'-parish','' | replace:'-county','' | replace:'-',' ' | capitalize | append:' Borough' %}
-        {% elsif seg_lower contains '-county' %}
-          {% assign name = seg_lower | replace:'-county','' | replace:'-',' ' | capitalize | append:' County' %}
+        {% assign is_independent_city = site.data.independent_cities and site.data.independent_cities[seg_lower] %}
+        {% assign prev_is_independent_city = site.data.independent_cities and site.data.independent_cities[prev_seg] %}
+
+        {% assign prev_is_county_like = prev_seg contains '-county' or prev_seg contains '-parish' or prev_seg contains '-borough' %}
+
+        {% if seg_lower == 'us' %}
+          {% assign name = 'United States' %}
+          {% assign is_jurisdiction = true %}
+
+        {% elsif is_state %}
+          {% assign name = site.data.us_states[seg_lower] %}
+          {% assign is_jurisdiction = true %}
+
+        {% elsif prev_is_state %}
+          {%- comment -%} County/Parish/Borough or City directly under a state {%- endcomment -%}
+          {% if prev_seg == 'la' or prev_seg == 'louisiana' %}
+            {% assign base = seg_lower | replace:'-parish','' | replace:'-county','' | replace:'-borough','' | replace:'-',' ' %}
+            {% capture pretty %}{% assign words = base | split:' ' %}{% for w in words %}{% if forloop.first == false %} {% endif %}{{ w | capitalize }}{% endfor %}{% endcapture %}
+            {% assign name = pretty | append: ' Parish' %}
+            {% assign is_jurisdiction = true %}
+          {% elsif prev_seg == 'ak' or prev_seg == 'alaska' %}
+            {% assign base = seg_lower | replace:'-borough','' | replace:'-parish','' | replace:'-county','' | replace:'-',' ' %}
+            {% capture pretty %}{% assign words = base | split:' ' %}{% for w in words %}{% if forloop.first == false %} {% endif %}{{ w | capitalize }}{% endfor %}{% endcapture %}
+            {% assign name = pretty | append: ' Borough' %}
+            {% assign is_jurisdiction = true %}
+          {% elsif seg_lower contains '-county' %}
+            {% assign base = seg_lower | replace:'-county','' | replace:'-',' ' %}
+            {% capture pretty %}{% assign words = base | split:' ' %}{% for w in words %}{% if forloop.first == false %} {% endif %}{{ w | capitalize }}{% endfor %}{% endcapture %}
+            {% assign name = pretty | append: ' County' %}
+            {% assign is_jurisdiction = true %}
+          {% else %}
+            {% assign name = titleized | strip %}
+            {% assign is_jurisdiction = true %}
+          {% endif %}
+
+        {% elsif is_independent_city %}
+          {% assign name = site.data.independent_cities[seg_lower] %}
+          {% assign is_jurisdiction = true %}
+
+        {% elsif prev_is_county_like or prev_is_independent_city %}
+          {%- comment -%} City under county/independent city {%- endcomment -%}
+          {% assign name = titleized | strip %}
+          {% assign is_jurisdiction = true %}
+
         {% else %}
-          {% assign name = seg_lower | replace:'-',' ' | capitalize %}
+          {%- comment -%}
+            Anything else under /us/ that isn't a known jurisdiction path → if it's the last segment,
+            treat as a person (terminal, not clickable). Otherwise fall back to a jurisdiction-like title.
+          {%- endcomment -%}
+          {% if is_last %}
+            {% assign name = titleized | strip %}
+            {% assign is_person = true %}
+            {% assign is_jurisdiction = false %}
+          {% else %}
+            {% assign name = titleized | strip %}
+            {% assign is_jurisdiction = true %}
+          {% endif %}
         {% endif %}
-        {% assign is_jurisdiction = true %}
 
-      {% elsif is_independent_city %}
-        {% assign name = site.data.independent_cities[seg_lower] %}
-        {% assign is_jurisdiction = true %}
-
-      {% elsif prev_is_county or prev_is_independent_city %}
-        {% assign name = seg_lower | replace:'-',' ' | capitalize %}
-        {% assign is_jurisdiction = true %}
-
+      {% else %}
+        {%- comment -%}
+          Not under /us/ (e.g., /about/, /news/):
+          Just show a simple trail: make non-last items links; last is current page (span).
+        {%- endcomment -%}
+        {% assign name = titleized | strip %}
+        {% assign is_jurisdiction = false %}
+        {% assign is_person = false %}
       {% endif %}
 
-      {% if is_last and is_jurisdiction == false %}
-        {% assign name = seg_lower | replace:'-',' ' | capitalize %}
-        {% assign is_person = true %}
-      {% endif %}
-
+      {% comment %}
+        Render:
+        - If last segment: render <span> (never a link)
+          - This covers /us/ itself, state pages, county/city pages, and person pages.
+        - If not last: render as a link.
+      {% endcomment %}
       {% if is_last %}
         <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem" aria-current="page">
           <span itemprop="name">{{ name }}</span>
@@ -79,6 +153,7 @@
           <meta itemprop="position" content="{{ index }}" />
         </li>
       {% endif %}
+
     {% endfor %}
   </ol>
 </nav>

@@ -16,5 +16,43 @@
     {{ content }}
   </main>
   {% include footer.html %}
+  <script>
+(function(){
+  const storageKey = 'govbook-theme';
+  const toggleBtn = () => document.getElementById('theme-toggle');
+
+  function applyTheme(theme) {
+    if (theme === 'light') {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+    } else if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    } else {
+      document.documentElement.classList.remove('light','dark'); // system default
+    }
+  }
+
+  // Load preference
+  const remembered = localStorage.getItem(storageKey);
+  applyTheme(remembered);
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const btn = toggleBtn();
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      const current = localStorage.getItem(storageKey);
+      const next = current === 'dark'
+        ? 'light'
+        : current === 'light'
+        ? null     // → clear and return to system
+        : 'dark';  // system → dark
+      if (next) localStorage.setItem(storageKey,next);
+      else localStorage.removeItem(storageKey);
+      applyTheme(next);
+    });
+  });
+})();
+</script>
 </body>
 </html>

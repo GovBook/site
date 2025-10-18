@@ -17,7 +17,7 @@
     --border: #1f2937;
     --shadow: 0 6px 24px rgba(0,0,0,.35);
     --accent: #1f6f3b; /* darker green for better contrast */
-    --accent-link: #4ade80;   /* brighter green (meets contrast) */
+    --accent-link: #2f8f4e; /* #4ade80;   /* brighter green (meets contrast) */
   }
 }
 
@@ -87,7 +87,7 @@ ul,ol{margin:.5rem 0 .75rem 1.25rem}
   margin-bottom: 1rem;
 }
 .breadcrumbs a {
-  color: var(--accent);
+  color: var(--accent-link, var(--accent));
 }
 
 .theme-toggle {

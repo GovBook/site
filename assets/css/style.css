@@ -16,6 +16,7 @@
     --muted: #9aa7b3;
     --border: #1f2937;
     --shadow: 0 6px 24px rgba(0,0,0,.35);
+    --accent: #1f6f3b; /* darker green for better contrast */
   }
 }
 
@@ -85,3 +86,15 @@ ul,ol{margin:.5rem 0 .75rem 1.25rem}
   color: var(--accent);
 }
 
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: .9rem;
+}
+.theme-toggle:hover {
+  border-color: var(--accent);
+}

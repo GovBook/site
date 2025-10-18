@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 64 64" role="img" aria-label="GovBook">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2f8f4e"/>
+      <stop offset="1" stop-color="#2a7c45"/>
+    </linearGradient>
+  </defs>
+  <!-- stylized open book + dome -->
+  <rect x="8" y="14" width="48" height="36" rx="6" ry="6" fill="url(#g)"/>
+  <path d="M16 22h16c4 0 8 2 8 6v14H16V22z" fill="white" opacity=".15"/>
+  <path d="M32 22h16v20H32z" fill="white" opacity=".08"/>
+  <circle cx="32" cy="18" r="6" fill="#fff" opacity=".9"/>
+</svg>

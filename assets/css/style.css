@@ -102,3 +102,12 @@ ul,ol{margin:.5rem 0 .75rem 1.25rem}
 .theme-toggle:hover {
   border-color: var(--accent);
 }
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.theme-icon {
+  font-size: 1rem;
+}
+

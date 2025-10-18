@@ -1,0 +1,12 @@
+{% assign segments = page.url | split:'/' | reject:' ' %}
+{% assign path = '' %}
+
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <a href="/">Home</a>
+  {% for segment in segments %}
+    {% if segment != '' %}
+      {% assign path = path | append: '/' | append: segment %}
+      › <a href="{{ path }}/">{{ segment | replace:'-',' ' | capitalize }}</a>
+    {% endif %}
+  {% endfor %}
+</nav>

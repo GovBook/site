@@ -14,32 +14,52 @@
         {% assign path = path | append:'/' | append:segment %}
         {% assign index = forloop.index0 | plus: 2 %}
 
-        {% assign name = segment %}
         {% assign seg_lower = segment | downcase %}
+        {% assign name = seg_lower %}
         {% assign prev_index = forloop.index0 | minus: 1 %}
         {% assign prev_seg = raw_segments[prev_index] | downcase %}
 
-        {%- comment -%} Priority 1: manual overrides via _data/breadcrumb_map.yml {%- endcomment -%}
+        {# Priority 1: manual overrides #}
         {% if site.data.breadcrumb_map and site.data.breadcrumb_map[seg_lower] %}
           {% assign name = site.data.breadcrumb_map[seg_lower] %}
 
-        {%- comment -%} Priority 2: US states via _data/us_states.yml {%- endcomment -%}
+        {# Priority 2: state mapping #}
         {% elsif site.data.us_states and site.data.us_states[seg_lower] %}
           {% assign name = site.data.us_states[seg_lower] %}
 
-        {%- comment -%} Priority 3: County fallback if previous segment is a state {%- endcomment -%}
-        {% elsif forloop.index0 > 0 and site.data.us_states and site.data.us_states[prev_seg] %}
-          {% if seg_lower contains '-county' %}
-            {% assign name = seg_lower | replace:'-county','' | replace:'-',' ' | capitalize | append:' County' %}
-          {% elsif seg_lower contains '-parish' %}
-            {% assign name = seg_lower | replace:'-parish','' | replace:'-',' ' | capitalize | append:' Parish' %}
-          {% elsif seg_lower contains '-borough' %}
-            {% assign name = seg_lower | replace:'-borough','' | replace:'-',' ' | capitalize | append:' Borough' %}
+        {# Priority 3: county-level logic if previous segment is a state #}
+        {% elsif forloop.index0 > 0 and site.data.us_states[prev_seg] %}
+
+          {%- assign is_louisiana = prev_seg == 'la' or prev_seg == 'louisiana' -%}
+          {%- assign is_alaska = prev_seg == 'ak' or prev_seg == 'alaska' -%}
+
+          {% if is_louisiana %}
+            {% assign name = seg_lower
+              | replace:'-parish',''
+              | replace:'-county',''
+              | replace:'-borough',''
+              | replace:'-',' '
+              | capitalize
+              | append:' Parish' %}
+          {% elsif is_alaska %}
+            {% assign name = seg_lower
+              | replace:'-borough',''
+              | replace:'-parish',''
+              | replace:'-county',''
+              | replace:'-',' '
+              | capitalize
+              | append:' Borough' %}
           {% else %}
-            {% assign name = seg_lower | replace:'-',' ' | capitalize | append:' County' %}
+            {% assign name = seg_lower
+              | replace:'-county',''
+              | replace:'-parish',''
+              | replace:'-borough',''
+              | replace:'-',' '
+              | capitalize
+              | append:' County' %}
           {% endif %}
 
-        {%- comment -%} Priority 4: Generic prettifier fallback {%- endcomment -%}
+        {# Priority 4: normal fallback #}
         {% else %}
           {% assign name = name | replace:'-',' ' | capitalize %}
         {% endif %}

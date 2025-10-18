@@ -11,4 +11,4 @@ Browse officials by state.
 
 ## States (example)
 
-- [Texas](/us/tx/)
+- [Texas](/us/texas/)

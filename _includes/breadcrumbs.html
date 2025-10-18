@@ -25,15 +25,19 @@
       {% assign prev_index = forloop.index0 | minus: 1 %}
       {% assign prev_seg = segments[prev_index] | downcase %}
 
+      {%- comment -%} Priority 1: manual overrides {%- endcomment -%}
       {% if site.data.breadcrumb_map and site.data.breadcrumb_map[seg_lower] %}
         {% assign name = site.data.breadcrumb_map[seg_lower] %}
+
+      {%- comment -%} Priority 2: state mapping {%- endcomment -%}
       {% elsif site.data.us_states and site.data.us_states[seg_lower] %}
         {% assign name = site.data.us_states[seg_lower] %}
-      {% elsif forloop.index0 > 0 and site.data.us_states and site.data.us_states[prev_seg] %}
-        {% assign is_louisiana = prev_seg == 'la' or prev_seg == 'louisiana' %}
-        {% assign is_alaska = prev_seg == 'ak' or prev_seg == 'alaska' %}
 
-        {% if is_louisiana %}
+      {%- comment -%} Priority 3: county-level logic ONLY when previous segment is a state {%- endcomment -%}
+      {% elsif forloop.index0 > 0 and site.data.us_states and site.data.us_states[prev_seg] %}
+
+        {% if prev_seg == 'la' or prev_seg == 'louisiana' %}
+          {# Louisiana → always normalize to Parish, with or without suffix #}
           {% assign name = seg_lower
             | replace:'-parish',''
             | replace:'-county',''
@@ -41,7 +45,9 @@
             | replace:'-',' '
             | capitalize
             | append:' Parish' %}
-        {% elsif is_alaska %}
+
+        {% elsif prev_seg == 'ak' or prev_seg == 'alaska' %}
+          {# Alaska → always normalize to Borough, with or without suffix #}
           {% assign name = seg_lower
             | replace:'-borough',''
             | replace:'-parish',''
@@ -49,15 +55,21 @@
             | replace:'-',' '
             | capitalize
             | append:' Borough' %}
+
         {% else %}
-          {% assign name = seg_lower
-            | replace:'-county',''
-            | replace:'-parish',''
-            | replace:'-borough',''
-            | replace:'-',' '
-            | capitalize
-            | append:' County' %}
+          {# Other states → only treat as county if explicitly suffixed with -county #}
+          {% if seg_lower contains '-county' %}
+            {% assign name = seg_lower
+              | replace:'-county',''
+              | replace:'-',' '
+              | capitalize
+              | append:' County' %}
+          {% else %}
+            {% assign name = seg_lower | replace:'-',' ' | capitalize %}
+          {% endif %}
         {% endif %}
+
+      {%- comment -%} Priority 4: generic prettifier fallback {%- endcomment -%}
       {% else %}
         {% assign name = name | replace:'-',' ' | capitalize %}
       {% endif %}

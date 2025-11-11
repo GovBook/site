@@ -2,7 +2,19 @@
   GovBook Breadcrumbs — V7.4.1 (cleaned + correct linking)
 {% endcomment %}
 
-{% assign raw_segments = page.url | split:'/' %}
+{# --- Replace: robustly choose a URL to split into segments --- #}
+{% assign url = page.url %}
+{% if url == nil or url == '' %}
+  {% if page.path %}
+    {% assign url = page.path %}
+  {% elsif page.permalink %}
+    {% assign url = page.permalink %}
+  {% else %}
+    {% assign url = '/' %}
+  {% endif %}
+{% endif %}
+{% assign raw_segments = url | split:'/' %}
+
 {% assign segments = "" | split:"" %}
 {% for s in raw_segments %}
   {% if s != "" %}
@@ -18,18 +30,6 @@
     <!-- Home -->
     <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
       <a href="/" itemprop="item"><span itemprop="name">Home</span></a>
-      <meta itemprop="position" content="1" />
-    </li>
-
-    {% assign on_us_branch = segments.size > 0 and segments[0] | downcase == 'us' %}
-
-    {% for segment in segments %}
-      {% assign seg_lower = segment | downcase %}
-      {% assign prev_seg = '' %}
-      {% if forloop.index0 > 0 %}
-        {% assign prev_seg = segments[forloop.index0 | minus: 1] | downcase %}
-      {% endif %}
-
       {% assign path = path | append:'/' | append:segment %}
       {% assign index = forloop.index0 | plus: 2 %}
       {% assign is_last = forloop.index0 == last_index %}

@@ -1,0 +1,132 @@
+---
+layout: default
+---
+
+{% assign senator = site.data.us.federal.senate[page.data_key] %}
+
+<article class="official-profile" itemscope itemtype="https://schema.org/Person">
+  <header class="profile-header">
+    {% if senator.photo.header %}
+      <img class="profile-banner" src="{{ senator.photo.header }}" alt="Photo of {{ senator.name }}">
+    {% endif %}
+    <div class="profile-meta">
+      <img class="profile-photo" src="{{ senator.photo.profile }}" alt="{{ senator.name }}">
+      <h1 itemprop="name">{{ senator.name }}</h1>
+      <p>{{ senator.title }} from {{ senator.state }} ({{ senator.party }})</p>
+      <p><strong>Term:</strong> {{ senator.term_start | date: "%B %Y" }} – {{ senator.term_end | date: "%B %Y" }}</p>
+    </div>
+  </header>
+
+  {% if senator.biography %}
+  <section id="biography" class="section">
+    <h2>Biography</h2>
+    <p itemprop="description">{{ senator.biography.summary }}</p>
+
+    {% if senator.biography.early_life %}
+      <h3>Early Life & Education</h3>
+      <p>{{ senator.biography.early_life }}</p>
+      <p><strong>Education:</strong> {{ senator.biography.education }}</p>
+    {% endif %}
+
+    {% if senator.biography.career %}
+      <h3>Career</h3>
+      <p>{{ senator.biography.career }}</p>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {% if senator.policy_positions %}
+  <section id="policy" class="section">
+    <h2>Policy Positions</h2>
+    <ul>
+      {% for p in senator.policy_positions %}
+      <li>
+        <strong>{{ p.topic }}:</strong> {{ p.stance }}
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if senator.committees %}
+  <section id="committees" class="section">
+    <h2>Committee Assignments</h2>
+    <ul>
+      {% for c in senator.committees %}
+      <li>{{ c.name }}{% if c.position %} — <em>{{ c.position }}</em>{% endif %}</li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if senator.legislation %}
+  <section id="legislation" class="section">
+    <h2>Legislation</h2>
+    {% if senator.legislation.bills_sponsored %}
+      <h3>Sponsored Bills</h3>
+      <ul>
+        {% for bill in senator.legislation.bills_sponsored %}
+        <li>
+          <a href="{{ bill.url }}" target="_blank">{{ bill.title }}</a> — {{ bill.status }} ({{ bill.introduced | date: "%b %d, %Y" }})<br>
+          <small>{{ bill.summary }}</small>
+        </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {% if senator.legislation.recent_votes %}
+      <h3>Recent Votes</h3>
+      <ul>
+        {% for vote in senator.legislation.recent_votes %}
+        <li>{{ vote.date | date: "%b %d, %Y" }} — {{ vote.bill }}: <strong>{{ vote.position }}</strong></li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {% if senator.timeline %}
+  <section id="timeline" class="section">
+    <h2>Career Timeline</h2>
+    <ul class="timeline">
+      {% for e in senator.timeline %}
+      <li><strong>{{ e.year }}</strong> — {{ e.event }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if senator.media %}
+  <section id="media" class="section">
+    <h2>Media Gallery</h2>
+    <div class="media-gallery">
+      {% for img in senator.media.photos %}
+      <img src="{{ img }}" alt="{{ senator.name }} photo">
+      {% endfor %}
+    </div>
+    {% if senator.media.videos %}
+      <h3>Videos</h3>
+      <ul>
+        {% for v in senator.media.videos %}
+        <li><a href="{{ v.url }}" target="_blank">{{ v.title }}</a></li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  <section id="contact" class="section">
+    <h2>Contact Information</h2>
+    {% if senator.contact.office_address %}<p><strong>Office:</strong> {{ senator.contact.office_address }}</p>{% endif %}
+    {% if senator.contact.phone %}<p><strong>Phone:</strong> {{ senator.contact.phone }}</p>{% endif %}
+    {% if senator.contact.fax %}<p><strong>Fax:</strong> {{ senator.contact.fax }}</p>{% endif %}
+    {% if senator.contact.email_form %}<p><a href="{{ senator.contact.email_form }}" target="_blank">Contact Form</a></p>{% endif %}
+    {% if senator.contact.website %}<p><a href="{{ senator.contact.website }}" target="_blank">Official Website</a></p>{% endif %}
+    {% if senator.contact.social %}
+      <ul class="social-links">
+        {% for s in senator.contact.social %}
+        <li><a href="{{ s[1] }}" target="_blank">{{ s[0] | capitalize }}</a></li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </section>
+</article>

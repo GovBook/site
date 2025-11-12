@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://govbook.co/schema/senator-schema.json",
+  "title": "United States Senator Profile",
+  "description": "Schema for GovBook senator data files under _data/us/federal/senate/",
+  "type": "object",
+  "required": ["id", "name", "state", "party", "term_start", "term_end", "contact"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "URL-safe slug identifier (e.g., 'ted-cruz')."
+    },
+    "name": {
+      "type": "string",
+      "description": "Full legal name of the senator."
+    },
+    "title": {
+      "type": "string",
+      "enum": ["Senator"],
+      "description": "Office title."
+    },
+    "state": {
+      "type": "string",
+      "description": "State represented by the senator (e.g., 'Texas')."
+    },
+    "party": {
+      "type": "string",
+      "enum": ["Republican", "Democratic", "Independent", "Other"],
+      "description": "Political party affiliation."
+    },
+    "chamber": {
+      "type": "string",
+      "const": "Senate"
+    },
+    "seniority": {
+      "type": "string",
+      "enum": ["Senior", "Junior"],
+      "description": "Senator's seniority within the state."
+    },
+    "term_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "term_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "biography": {
+      "type": "object",
+      "properties": {
+        "summary": { "type": "string" },
+        "early_life": { "type": "string" },
+        "education": { "type": "string" },
+        "career": { "type": "string" }
+      },
+      "required": ["summary"]
+    },
+    "photo": {
+      "type": "object",
+      "properties": {
+        "profile": { "type": "string", "description": "Path to profile portrait image." },
+        "header": { "type": "string", "description": "Path to banner image." }
+      }
+    },
+    "contact": {
+      "type": "object",
+      "required": ["website"],
+      "properties": {
+        "office_address": { "type": "string" },
+        "phone": { "type": "string" },
+        "fax": { "type": "string" },
+        "email_form": { "type": "string", "format": "uri" },
+        "website": { "type": "string", "format": "uri" },
+        "social": {
+          "type": "object",
+          "properties": {
+            "twitter": { "type": "string", "format": "uri" },
+            "facebook": { "type": "string", "format": "uri" },
+            "youtube": { "type": "string", "format": "uri" },
+            "instagram": { "type": "string", "format": "uri" }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "committees": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "position": { "type": "string" }
+        },
+        "required": ["name"]
+      }
+    },
+    "policy_positions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "topic": { "type": "string" },
+          "stance": { "type": "string" }
+        },
+        "required": ["topic", "stance"]
+      }
+    },
+    "legislation": {
+      "type": "object",
+      "properties": {
+        "bills_sponsored": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string" },
+              "summary": { "type": "string" },
+              "introduced": { "type": "string", "format": "date" },
+              "status": { "type": "string" },
+              "url": { "type": "string", "format": "uri" }
+            },
+            "required": ["title", "introduced", "status"]
+          }
+        },
+        "recent_votes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "bill": { "type": "string" },
+              "position": { "type": "string", "enum": ["Yes", "No", "Abstain"] },
+              "date": { "type": "string", "format": "date" }
+            },
+            "required": ["bill", "position", "date"]
+          }
+        }
+      }
+    },
+    "timeline": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "year": { "type": "string" },
+          "event": { "type": "string" }
+        },
+        "required": ["year", "event"]
+      }
+    },
+    "media": {
+      "type": "object",
+      "properties": {
+        "photos": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "videos": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string" },
+              "url": { "type": "string", "format": "uri" }
+            },
+            "required": ["url"]
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

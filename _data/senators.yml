@@ -1,0 +1,16 @@
+ted-cruz:
+  name: "Ted Cruz"
+  state: "Texas"
+  party: "Republican"
+  chamber: "Senate"
+  district: null
+  term_start: "2013-01-03"
+  term_end: "2025-01-03"
+  photo: "/assets/images/senators/ted-cruz.jpg"
+  website: "https://www.cruz.senate.gov/"
+  contact_form: "https://www.cruz.senate.gov/contact"
+  twitter: "https://twitter.com/tedcruz"
+  committees:
+    - name: "Commerce, Science, and Transportation"
+    - name: "Foreign Relations"
+    - name: "Judiciary"

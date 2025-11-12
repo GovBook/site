@@ -2,7 +2,12 @@
   GovBook Breadcrumbs — V7.4.1 (cleaned + correct linking)
 {% endcomment %}
 
-{# --- Replace: robustly choose a URL to split into segments --- #}
+{% comment %} Robustly choose a URL to split into segments (prefer page.url, then permalink, then path). Normalize absolute URLs, strip index pages and extensions, and avoid printing any stray debug/comment text. {% endcomment %}
+{% assign base = site.baseurl | default: '' %}
+{% if base == '/' %}
+  {% assign base = '' %}
+{% endif %}
+
 {% assign url = page.url %}
 {% if url == nil or url == '' %}
   {% if page.path %}
@@ -13,16 +18,32 @@
     {% assign url = '/' %}
   {% endif %}
 {% endif %}
+
+{% if url contains 'http' %}
+  {% assign url = url | remove: 'http://' | remove: 'https://' %}
+  {% assign url = url | remove: site.url %}
+  {% if base != '' %}
+    {% assign url = url | remove: base %}
+  {% endif %}
+  {% assign url = '/' | append: url %}
+{% endif %}
+
+{%- comment -%} Strip index pages and file extensions to avoid empty or irrelevant segments {%- endcomment -%}
+{% assign url = url | replace: 'index.html','' | replace: 'index.htm','' | replace: 'index.md','' %}
+{% assign url = url | replace: '.html','' | replace: '.md','' %}
+{% assign url = url | replace: '//' , '/' %}
+
 {% assign raw_segments = url | split:'/' %}
 
 {% assign segments = "" | split:"" %}
 {% for s in raw_segments %}
-  {% if s != "" %}
-    {% assign segments = segments | push: s %}
+  {% assign s_clean = s | strip %}
+  {% if s_clean != "" and s_clean != "nil" %}
+    {% assign segments = segments | push: s_clean %}
   {% endif %}
 {% endfor %}
 
-{% assign path = '' %}
+{% assign path = base %}
 {% assign last_index = segments.size | minus: 1 %}
 
 {% comment %} Determine if this is a US branch once so we can use it inside the loop. {% endcomment %}
@@ -37,8 +58,10 @@
 <nav class="breadcrumbs" aria-label="Breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList">
   <ol>
     <!-- Home -->
+    {% assign home_href = base | append:'/' | replace:'//','/' %}
     <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-      <a href="/" itemprop="item"><span itemprop="name">Home</span></a>
+      <a href="{{ home_href }}" itemprop="item"><span itemprop="name">Home</span></a>
+      <meta itemprop="position" content="1" />
     </li>
 
     {% comment %} Iterate segments and render breadcrumbs {% endcomment %}
@@ -50,6 +73,7 @@
       {% endif %}
 
       {% assign path = path | append:'/' | append:segment %}
+      {% assign path = path | replace:'//','/' %}
       {% assign index = forloop.index0 | plus: 2 %}
       {% assign is_last = forloop.index0 == last_index %}
 
@@ -118,7 +142,7 @@
         </li>
       {% else %}
         <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-          <a href="{{ path }}/" itemprop="item"><span itemprop="name">{{ name }}</span></a>
+          <a href="{{ path | append:'/' | replace:'//','/' }}" itemprop="item"><span itemprop="name">{{ name }}</span></a>
           <meta itemprop="position" content="{{ index }}" />
         </li>
       {% endif %}

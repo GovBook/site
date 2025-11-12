@@ -25,11 +25,30 @@
 {% assign path = '' %}
 {% assign last_index = segments.size | minus: 1 %}
 
+{% comment %} Determine if this is a US branch once so we can use it inside the loop. {% endcomment %}
+{% assign on_us_branch = false %}
+{% if segments.size > 0 %}
+  {% assign first_seg = segments[0] | downcase %}
+  {% if first_seg == 'us' or first_seg == 'united-states' %}
+    {% assign on_us_branch = true %}
+  {% endif %}
+{% endif %}
+
 <nav class="breadcrumbs" aria-label="Breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList">
   <ol>
     <!-- Home -->
     <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
       <a href="/" itemprop="item"><span itemprop="name">Home</span></a>
+    </li>
+
+    {% comment %} Iterate segments and render breadcrumbs {% endcomment %}
+    {% for segment in segments %}
+      {% assign seg_lower = segment | downcase %}
+      {% assign prev_seg = '' %}
+      {% if forloop.index0 > 0 %}
+        {% assign prev_seg = segments[forloop.index0 | minus: 1] | downcase %}
+      {% endif %}
+
       {% assign path = path | append:'/' | append:segment %}
       {% assign index = forloop.index0 | plus: 2 %}
       {% assign is_last = forloop.index0 == last_index %}

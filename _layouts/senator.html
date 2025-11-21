@@ -6,20 +6,48 @@ layout: default
 
 <article class="official-profile" itemscope itemtype="https://schema.org/Person">
   <header class="profile-header">
-    {% if senator.photo.header %}
-      <img class="profile-banner" src="{{ senator.photo.header }}" alt="Photo of {{ senator.name }}">
-    {% endif %}
-    <div class="profile-meta">
-      <img class="profile-photo" src="{{ senator.photo.profile }}" alt="{{ senator.name }}">
+  <img class="profile-banner" src="{{ senator.photo.header | default: '/assets/img/senator-header-default.svg' }}" data-fallback="/assets/img/senator-header-default.svg" alt="{% if senator.photo.header %}Photo of {% endif %}{{ senator.name }}" loading="lazy" onerror="this.onerror=null;this.src='/assets/img/senator-header-default.svg'">
+  <div class="profile-meta container">
+  <img class="profile-photo" src="{{ senator.photo.profile | default: '/assets/img/senator-profile-default.svg' }}" data-fallback="/assets/img/senator-profile-default.svg" alt="{{ senator.name }}" loading="lazy" onerror="this.onerror=null;this.src='/assets/img/senator-profile-default.svg'">
+    <div class="profile-details">
       <h1 itemprop="name">{{ senator.name }}</h1>
-      <p>{{ senator.title }} from {{ senator.state }} ({{ senator.party }})</p>
-      <p><strong>Term:</strong> {{ senator.term_start | date: "%B %Y" }} – {{ senator.term_end | date: "%B %Y" }}</p>
+  <p class="profile-title">{{ senator.title }} from {{ senator.state }} <span class="party-pill {% if senator.party contains 'Democrat' or senator.party contains 'Democratic' %}party-democratic{% elsif senator.party contains 'Republic' %}party-republican{% elsif senator.party contains 'Independent' %}party-independent{% endif %}">{{ senator.party }}</span></p>
+  <p class="profile-term"><strong>Term:</strong> {{ senator.term_start | date: "%B %Y" }} – {{ senator.term_end | date: "%B %Y" }}</p>
     </div>
   </header>
 
-  {% if senator.biography %}
-  <section id="biography" class="section">
-    <h2>Biography</h2>
+  <!-- horizontal quick links: duplicates aside TOC but reduces side real estate -->
+  <nav class="profile-tabs container" aria-label="Profile quick links">
+    {% if senator.biography %}<a href="#biography">Biography</a>{% endif %}
+    {% if senator.policy_positions %}<a href="#policy">Policy</a>{% endif %}
+    {% if senator.committees %}<a href="#committees">Committees</a>{% endif %}
+    {% if senator.legislation %}<a href="#legislation">Legislation</a>{% endif %}
+    {% if senator.timeline %}<a href="#timeline">Timeline</a>{% endif %}
+    {% if senator.media %}<a href="#media">Media</a>{% endif %}
+    <a href="#contact">Contact</a>
+  </nav>
+
+  <!-- compact header shown after scrolling - identical quick links + mini profile -->
+  <div class="profile-mini container" role="navigation" aria-label="Compact profile navigation">
+    <div style="display:flex;align-items:center;gap:10px">
+  <img class="mini-photo" src="{{ senator.photo.profile | default: '/assets/img/senator-profile-default.svg' }}" data-fallback="/assets/img/senator-profile-default.svg" alt="{{ senator.name }}" onerror="this.onerror=null;this.src='/assets/img/senator-profile-default.svg'" role="button" tabindex="0" aria-label="Back to top">
+  <span class="mini-name" role="button" tabindex="0" aria-label="Back to top">{{ senator.name }}</span>
+    </div>
+  <nav class="mini-tabs" aria-label="Compact quick links">
+      {% if senator.biography %}<a href="#biography">Bio</a>{% endif %}
+      {% if senator.policy_positions %}<a href="#policy">Policy</a>{% endif %}
+      {% if senator.committees %}<a href="#committees">Committees</a>{% endif %}
+      {% if senator.legislation %}<a href="#legislation">Legislation</a>{% endif %}
+      {% if senator.timeline %}<a href="#timeline">Timeline</a>{% endif %}
+      {% if senator.media %}<a href="#media">Media</a>{% endif %}
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+  <div class="profile-grid container">
+    <main class="profile-main">
+      {% if senator.biography %}
+      <section id="biography" class="section card" aria-labelledby="biography-heading">
+        <h2 id="biography-heading">Biography</h2>
     <p itemprop="description">{{ senator.biography.summary }}</p>
 
     {% if senator.biography.early_life %}
@@ -33,11 +61,11 @@ layout: default
       <p>{{ senator.biography.career }}</p>
     {% endif %}
   </section>
-  {% endif %}
+    {% endif %}
 
   {% if senator.policy_positions %}
-  <section id="policy" class="section">
-    <h2>Policy Positions</h2>
+  <section id="policy" class="section card" aria-labelledby="policy-heading">
+    <h2 id="policy-heading">Policy Positions</h2>
     <ul>
       {% for p in senator.policy_positions %}
       <li>
@@ -46,28 +74,28 @@ layout: default
       {% endfor %}
     </ul>
   </section>
-  {% endif %}
+    {% endif %}
 
   {% if senator.committees %}
-  <section id="committees" class="section">
-    <h2>Committee Assignments</h2>
+  <section id="committees" class="section card" aria-labelledby="committees-heading">
+    <h2 id="committees-heading">Committee Assignments</h2>
     <ul>
       {% for c in senator.committees %}
       <li>{{ c.name }}{% if c.position %} — <em>{{ c.position }}</em>{% endif %}</li>
       {% endfor %}
     </ul>
   </section>
-  {% endif %}
+    {% endif %}
 
   {% if senator.legislation %}
-  <section id="legislation" class="section">
-    <h2>Legislation</h2>
+  <section id="legislation" class="section card" aria-labelledby="legislation-heading">
+    <h2 id="legislation-heading">Legislation</h2>
     {% if senator.legislation.bills_sponsored %}
       <h3>Sponsored Bills</h3>
       <ul>
         {% for bill in senator.legislation.bills_sponsored %}
         <li>
-          <a href="{{ bill.url }}" target="_blank">{{ bill.title }}</a> — {{ bill.status }} ({{ bill.introduced | date: "%b %d, %Y" }})<br>
+          <a href="{{ bill.url }}" target="_blank" rel="noopener noreferrer">{{ bill.title }}</a> — {{ bill.status }} ({{ bill.introduced | date: "%b %d, %Y" }})<br>
           <small>{{ bill.summary }}</small>
         </li>
         {% endfor %}
@@ -82,51 +110,76 @@ layout: default
       </ul>
     {% endif %}
   </section>
-  {% endif %}
+    {% endif %}
 
   {% if senator.timeline %}
-  <section id="timeline" class="section">
-    <h2>Career Timeline</h2>
+  <section id="timeline" class="section card" aria-labelledby="timeline-heading">
+    <h2 id="timeline-heading">Career Timeline</h2>
     <ul class="timeline">
       {% for e in senator.timeline %}
       <li><strong>{{ e.year }}</strong> — {{ e.event }}</li>
       {% endfor %}
     </ul>
   </section>
-  {% endif %}
+    {% endif %}
 
   {% if senator.media %}
-  <section id="media" class="section">
-    <h2>Media Gallery</h2>
+  <section id="media" class="section card" aria-labelledby="media-heading">
+    <h2 id="media-heading">Media Gallery</h2>
     <div class="media-gallery">
-      {% for img in senator.media.photos %}
-      <img src="{{ img }}" alt="{{ senator.name }} photo">
-      {% endfor %}
+  {% for img in senator.media.photos %}
+  <img src="{{ img }}" data-fallback="/assets/img/senator-profile-default.svg" alt="{{ senator.name }} photo" loading="lazy" onerror="this.onerror=null;this.src='/assets/img/senator-profile-default.svg'">
+  {% endfor %}
     </div>
     {% if senator.media.videos %}
       <h3>Videos</h3>
       <ul>
         {% for v in senator.media.videos %}
-        <li><a href="{{ v.url }}" target="_blank">{{ v.title }}</a></li>
+  <li><a href="{{ v.url }}" target="_blank" rel="noopener noreferrer">{{ v.title }}</a></li>
         {% endfor %}
       </ul>
     {% endif %}
   </section>
   {% endif %}
-
-  <section id="contact" class="section">
-    <h2>Contact Information</h2>
+  <section id="contact" class="section card" aria-labelledby="contact-heading">
+    <h2 id="contact-heading">Contact Information</h2>
     {% if senator.contact.office_address %}<p><strong>Office:</strong> {{ senator.contact.office_address }}</p>{% endif %}
-    {% if senator.contact.phone %}<p><strong>Phone:</strong> {{ senator.contact.phone }}</p>{% endif %}
+  {% if senator.contact.phone %}<p><strong>Phone:</strong> <a href="tel:{{ senator.contact.phone | remove: ' ' | remove: '(' | remove: ')' | remove: '-' }}">{{ senator.contact.phone }}</a></p>{% endif %}
     {% if senator.contact.fax %}<p><strong>Fax:</strong> {{ senator.contact.fax }}</p>{% endif %}
-    {% if senator.contact.email_form %}<p><a href="{{ senator.contact.email_form }}" target="_blank">Contact Form</a></p>{% endif %}
-    {% if senator.contact.website %}<p><a href="{{ senator.contact.website }}" target="_blank">Official Website</a></p>{% endif %}
+  {% if senator.contact.email_form %}<p><a href="{{ senator.contact.email_form }}" target="_blank" rel="noopener noreferrer">Contact Form</a></p>{% endif %}
+  {% if senator.contact.website %}<p><a href="{{ senator.contact.website }}" target="_blank" rel="noopener noreferrer">Official Website</a></p>{% endif %}
     {% if senator.contact.social %}
       <ul class="social-links">
         {% for s in senator.contact.social %}
-        <li><a href="{{ s[1] }}" target="_blank">{{ s[0] | capitalize }}</a></li>
+  <li><a href="{{ s[1] }}" target="_blank" rel="noopener noreferrer">{{ s[0] | capitalize }}</a></li>
         {% endfor %}
       </ul>
     {% endif %}
-  </section>
+      </section>
+    </main>
+
+    <aside class="profile-aside">
+      <div class="card">
+
+        <h3>Contact</h3>
+        <div class="contact-info">
+          {% if senator.contact.office_address %}<p><strong>Office:</strong><br>{{ senator.contact.office_address }}</p>{% endif %}
+          {% if senator.contact.phone %}<p><strong>Phone:</strong> <a href="tel:{{ senator.contact.phone | remove: ' ' | remove: '(' | remove: ')' | remove: '-' }}">{{ senator.contact.phone }}</a></p>{% endif %}
+          {% if senator.contact.email_form %}<p><a class="btn" href="{{ senator.contact.email_form }}" target="_blank" rel="noopener noreferrer">Contact Office</a></p>{% endif %}
+          {% if senator.contact.website %}<p><a class="btn" href="{{ senator.contact.website }}" target="_blank" rel="noopener noreferrer">Official Website</a></p>{% endif %}
+        </div>
+
+        {% if senator.contact.social %}
+        <div>
+          <h4>Social</h4>
+          <ul class="social-links">
+            {% for s in senator.contact.social %}
+            <li><a href="{{ s[1] }}" target="_blank" rel="noopener noreferrer">{{ s[0] | capitalize }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
 </article>
